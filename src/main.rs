@@ -1,7 +1,11 @@
 use std::fs::File;
-use std::io::ErrorKind;
+use std::fs::read_to_string;
+// use std::io::ErrorKind;
+use std::io;
+use std::error::Error;
+// use std::io::Read;
 
-fn main() {
+fn main() -> Result<(), Box<dyn Error>> {
     // 1
     // Simply crash.
     // panic!("crash and burn");
@@ -34,15 +38,60 @@ fn main() {
 
     // 4
     // The same as 3, but more rustacean way of doing things (with closures).
-    let f = File::open("hello.txt").unwrap_or_else(|error| {
+    /* let f = File::open("hello.txt").unwrap_or_else(|error| {
         if error.kind() == ErrorKind::NotFound {
             File::create("hello.txt").unwrap_or_else(|create_error| {
                 panic!("Error creating file {:?}", create_error)
             })
         } else {
-            panic!("Could not open file: {:?}", error)
+            panic!("Could not open the file: {:?}", error)
         }
     });
+     */
 
-    // Continue here: https://doc.rust-lang.org/book/ch09-02-recoverable-errors-with-result.html#shortcuts-for-panic-on-error-unwrap-and-expect
+    // let f = File::open("hello.txt").expect("Could not open the file hello.txt");
+
+    // 5
+    // match read_username_from_file() {
+    //     Ok(username) => println!("the username is {}", username),
+    //     Err(e) => panic!("Error getting username. {:?}", e)
+    // }
+
+    // 6 The next line will be blocked by the compiler. The ? is only valid in a function that
+    // returns a Result or an Option.
+    // We can change the function header of this main method to:
+    // fn main() -> Result<(), Box<dyn Error>> {
+    // So we can use the ? operator in main.
+    let f = File::open("hello.txt")?;
+    Ok(())
+}
+
+fn read_username_from_file() -> Result<String, io::Error> {
+    // 5.1 First version of this feature implementation
+    // let f = File::open("hello.txt");
+    // let mut f = match f {
+    //     Ok(file) => file,
+    //     Err(e) => return Err(e)
+    // };
+    //
+    // let mut s = String::new();
+    //
+    // match f.read_to_string(&mut s) {
+    //     Ok(_) => Ok(s),
+    //     Err(e) => Err(e)
+    // }
+
+    // 5.2 better implementation with the ? operator
+    // let mut f = File::open("hello.txt")?;
+    // let mut s = String::new();
+    // f.read_to_string(&mut s)?;
+    // Ok(s)
+
+    // 5.3 even shorter
+    // let mut s = String::new();
+    // File::open("hello.txt")?.read_to_string(&mut s)?;
+    // Ok(s)
+
+    // 5.4 even more shorter
+    read_to_string("hello.txt")
 }
